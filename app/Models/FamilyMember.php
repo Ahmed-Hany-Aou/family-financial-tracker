@@ -19,10 +19,11 @@ class FamilyMember extends Authenticatable
     protected $fillable = [
         'name',
         'email', 
-        'role',
+        'position_id',
         'permission_level',
         'password',
-        'is_active'
+        'is_active',
+        'family_id'
     ];
 
     protected $hidden = [
@@ -75,6 +76,22 @@ class FamilyMember extends Authenticatable
      */
     public function isFather(): bool
     {
-        return $this->role === 'father';
+        return $this->position_id === 1; // father position ID
+    }
+
+    /**
+     * Relationship: Family member belongs to a family
+     */
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
+
+    /**
+     * Relationship: Family member belongs to a position
+     */
+    public function position()
+    {
+        return $this->belongsTo(Position::class);
     }
 }
