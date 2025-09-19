@@ -15,18 +15,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('family_members', function (Blueprint $table) {
-            $table->string('name', 100)->after('id');
-            $table->string('email')->unique()->after('name');
-            $table->enum('role', ['father', 'son'])->default('son')->after('email');
-            $table->enum('permission_level', ['read_only', 'read_write'])->default('read_only')->after('role');
-            $table->timestamp('email_verified_at')->nullable()->after('permission_level');
-            $table->string('password')->after('email_verified_at');
-            $table->boolean('is_active')->default(true)->after('password');
-            $table->rememberToken()->after('is_active');
+        Schema::create('family_members', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100);
+            $table->string('email')->unique();
+            $table->enum('position', ['father', 'mother', 'son', 'daughter', 'other'])->default('other');
+            $table->enum('permission_level', ['read_only', 'read_write'])->default('read_only');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->boolean('is_active')->default(true);
+            $table->rememberToken();
+            $table->timestamps();
             
             // Indexes for performance (Database design best practices)
-            $table->index(['role', 'is_active'], 'idx_role_active');
+            $table->index(['position', 'is_active'], 'idx_position_active');
             $table->index('email', 'idx_email');
         });
     }
@@ -36,13 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('family_members', function (Blueprint $table) {
-            $table->dropIndex('idx_role_active');
-            $table->dropIndex('idx_email');
-            $table->dropColumn([
-                'name', 'email', 'role', 'permission_level', 
-                'email_verified_at', 'password', 'is_active', 'remember_token'
-            ]);
-        });
+        Schema::dropIfExists('family_members');
     }
 };
