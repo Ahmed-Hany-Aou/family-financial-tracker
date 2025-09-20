@@ -17,6 +17,7 @@ class Account extends Model
 
     protected $fillable = [
         'family_member_id',
+        'position_id',
         'name',
         'type',
         'usd_balance',
@@ -38,7 +39,15 @@ class Account extends Model
      */
     public function familyMember(): BelongsTo
     {
-        return $this->belongsTo(FamilyMember::class);
+        return $this->belongsTo(FamilyMember::class,'family_member_id');
+    }
+
+    /**
+     * Relationship: Account belongs to a position
+     */
+    public function position(): BelongsTo
+    {
+        return $this->belongsTo(Position::class);
     }
 
     /**
