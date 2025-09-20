@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Role;
+
 
 /**
  * Single Responsibility: This model only handles FamilyMember data and relationships
@@ -43,7 +45,8 @@ class FamilyMember extends Authenticatable
      */
     public function accounts(): HasMany
     {
-        return $this->hasMany(Account::class);
+        return $this->hasMany(Account::class, 'family_member_id');
+        
     }
 
     /**
@@ -84,7 +87,7 @@ class FamilyMember extends Authenticatable
      */
     public function family()
     {
-        return $this->belongsTo(Family::class);
+        return $this->belongsTo(Family::class, 'family_id');
     }
 
     /**
@@ -92,6 +95,15 @@ class FamilyMember extends Authenticatable
      */
     public function position()
     {
-        return $this->belongsTo(Position::class);
+        return $this->belongsTo(Position::class, 'position_id');
     }
+
+    public function role()
+{
+    return $this->belongsTo(Role::class, 'role_id');
+}
+    public function canBeDeleted(): bool
+{
+    return $this->accounts()->count() === 0;
+}
 }
