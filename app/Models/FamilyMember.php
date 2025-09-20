@@ -9,7 +9,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Role;
 
-
 /**
  * Single Responsibility: This model only handles FamilyMember data and relationships
  * Open/Closed: Can be extended without modifying existing code
@@ -21,11 +20,23 @@ class FamilyMember extends Authenticatable
     protected $fillable = [
         'name',
         'email', 
+        'phone',
+        'dob',
+        'gender',
+        'personal_id',
+        'photo',
+        'address',
+        'emergency_name',
+        'emergency_phone',
+        'notes',
         'position_id',
+        'role_id',  // This was missing
         'permission_level',
         'password',
         'is_active',
-        'family_id'
+        'family_id',
+        'email_verified_at',
+        'remember_token'
     ];
 
     protected $hidden = [
@@ -34,6 +45,7 @@ class FamilyMember extends Authenticatable
     ];
 
     protected $casts = [
+        'dob' => 'date',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
@@ -46,7 +58,6 @@ class FamilyMember extends Authenticatable
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class, 'family_member_id');
-        
     }
 
     /**
@@ -98,12 +109,55 @@ class FamilyMember extends Authenticatable
         return $this->belongsTo(Position::class, 'position_id');
     }
 
+    /**
+     * Relationship: Family member belongs to a role
+     */
     public function role()
-{
-    return $this->belongsTo(Role::class, 'role_id');
-}
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Business Logic: Check if member can be deleted
+     */
     public function canBeDeleted(): bool
-{
-    return $this->accounts()->count() === 0;
-}
+    {
+        return $this->accounts()->count() === 0;
+    }
+
+    /**
+     * Get the member's full name with position
+     */
+    public function getFullNameWithPositionAttribute(): string
+    {
+        return $this->name . ' (' . $this->position?->name . ')';
+    }
+
+    /**
+     * Get avatar URL or generate one
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->photo) {
+            return asset('storage/' . $this->photo);
+        }
+        
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+    }
+
+    /**
+     * Scope: Get only active members
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope: Get members by family
+     */
+    public function scopeByFamily($query, $familyId)
+    {
+        return $query->where('family_id', $familyId);
+    }
 }
